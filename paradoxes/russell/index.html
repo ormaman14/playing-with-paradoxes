@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Russell's Paradox — Paradoxes</title>
+  <meta name="description" content="An interactive barber-paradox sorting game that breaks, and the set-theoretic loop behind it: Russell's paradox, the 1902 letter to Frege, and why mathematics needed new foundations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💈</text></svg>">
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]});"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand"><a href="../../">Playing with Paradoxes</a></div>
+  <a class="back-link" href="../../">&larr; All paradoxes</a>
+</header>
+<div class="meander"></div>
+
+<main>
+  <h1>Russell's Paradox</h1>
+  <p class="lead">Bertrand Russell, 1901 &mdash; a village barber with an impossible job description, and the short letter that broke the foundations of mathematics.</p>
+
+  <!-- ============ 1. The story ============ -->
+  <h2>1 · The story</h2>
+  <p>
+    In a certain village, every man keeps clean-shaven, and there is exactly one barber. The village has a simple,
+    sensible rule about who shaves whom:
+  </p>
+  <blockquote>
+    The barber shaves all those, and only those, who do not shave themselves.
+    <footer>&mdash; the barber puzzle Russell used to popularize his paradox (Russell 1919)</footer>
+  </blockquote>
+  <p>
+    So every man in the village falls into exactly one of two drawers at the town registry: the men who
+    <em>shave themselves</em> (the barber leaves them alone), and the men who are <em>shaved by the barber</em>
+    (because they don't shave themselves). Two tidy drawers, one clear rule, no overlap. The registry clerk
+    files villager after villager without a hitch &mdash; until one particular resident walks in.
+  </p>
+  <p>
+    Try the clerk's job yourself. It goes fine. Almost.
+  </p>
+
+  <!-- ============ 2. The game ============ -->
+  <h2>2 · Play the registry clerk</h2>
+  <p>
+    File every villager into the correct drawer, according to the fact on his card &mdash; <strong>tap a card,
+    then tap a drawer</strong> (or just drag the card in). The rule is printed on each drawer. Save the barber
+    for last, or don't. It won't help him.
+  </p>
+
+  <div class="sim">
+    <div class="barber-game">
+      <div class="card-tray" id="card-tray"></div>
+      <div class="bins">
+        <div class="drop-bin" id="bin-self">
+          <h4>✂️ Shaves himself</h4>
+          <div class="bin-cards"></div>
+        </div>
+        <div class="drop-bin" id="bin-barber">
+          <h4>💈 Shaved by the barber</h4>
+          <div class="bin-cards"></div>
+        </div>
+      </div>
+      <div class="loop-strip" id="loop-strip"></div>
+    </div>
+    <div id="game-status">Six villagers and one barber await filing. The rule: the barber shaves exactly those who do not shave themselves.</div>
+    <div class="logic-error" id="logic-error">
+      <h3>⚠ LOGIC ERROR — VILLAGER CANNOT BE FILED</h3>
+      <p>
+        You have tried both drawers. If the barber shaves himself, the rule forbids him from shaving himself.
+        If he doesn't, the rule requires him to. <strong>He shaves himself if and only if he does not shave
+        himself</strong> &mdash; each drawer sends him to the other, forever.
+      </p>
+      <p>
+        For a village, there is an exit: conclude that <em>no such barber can exist</em> &mdash; the job
+        description sounded innocent but describes nobody, like &ldquo;a married bachelor.&rdquo; The registry
+        closes the file, and everyone goes home. Hold that thought, though: in section 3 the same loop appears
+        somewhere with <em>no</em> exit.
+      </p>
+      <div class="logic-machine">
+        <span>VILLAGE LOGIC MACHINE</span>
+        <span class="lm-query">does the barber shave himself?</span>
+        <span class="lm-out" id="lm-out">…</span>
+        <span>step <span id="lm-steps">0</span> · still computing…</span>
+      </div>
+      <p class="muted" style="font-size: 0.88rem; margin-top: 10px;">
+        Our third broken machine: the Achilles page <em>rounded</em>, the hotel <em>overflowed</em> &mdash;
+        this one simply <em>never finishes</em>. Every answer it tries is a reason to try the other.
+      </p>
+    </div>
+    <div class="sim-controls">
+      <span class="spacer"></span>
+      <button id="btn-reset" class="ghost">Reset the registry</button>
+    </div>
+  </div>
+
+  <!-- ============ 3. From the barber to sets ============ -->
+  <h2>3 · From the barber to sets</h2>
+  <p>
+    The barber, on his own, is only a good joke: the story smuggled in an impossible character, and the correct
+    response is to deny he exists. Russell told it exactly for that reason &mdash; as a pocket-sized version of
+    something far more serious he had found in 1901, at the heart of mathematics itself.
+  </p>
+  <p>
+    At the time, Gottlob Frege was completing his life's work, the <em>Grundgesetze der Arithmetik</em> &mdash;
+    a derivation of all of arithmetic from pure logic. Its engine was one supremely natural principle,
+    <strong>naive comprehension</strong>: every property you can state defines a set. The even numbers form a set;
+    the red things form a set; and &mdash; note &mdash; some sets can then contain themselves (the set of all
+    non-teapots is not a teapot, so it contains itself), while ordinary ones don't. Following the rule, collect
+    exactly the ordinary ones:
+  </p>
+  <p>
+    $$ R \;=\; \{\, x \;:\; x \notin x \,\} $$
+  </p>
+  <p>
+    &mdash; the set of all sets that do not contain themselves. Now ask the clerk's question: which drawer does
+    \(R\) itself go in? If \(R \in R\), then \(R\) fails the membership condition, so \(R \notin R\). If
+    \(R \notin R\), then \(R\) satisfies the condition, so \(R \in R\):
+  </p>
+  <p>
+    $$ R \in R \iff R \notin R. $$
+  </p>
+  <p>
+    The barber's loop, exactly &mdash; but this time the exit is bricked up. We cannot shrug that &ldquo;no such
+    set exists,&rdquo; because Frege's comprehension principle <em>guarantees</em> it exists: it is defined by a
+    perfectly grammatical property. A single contradiction, derivable in two lines, inside a system meant to be
+    the bedrock of arithmetic &mdash; and a contradiction, once admitted, proves everything and ruins the whole
+    building.
+  </p>
+  <p>
+    Russell wrote to Frege on June 16, 1902, while volume II of the <em>Grundgesetze</em> was in press. Frege's
+    reply is one of the most quietly devastating sentences in the history of science: <em>&ldquo;a scientific
+    writer can hardly encounter anything more undesirable than to have the foundation give way just as the work
+    is finished.&rdquo;</em> He added a hurried appendix attempting a repair; it did not work. The repairs that
+    <em>did</em> work reshaped mathematics: Zermelo (and later Fraenkel) rebuilt set theory on axioms where
+    comprehension is restricted &mdash; you may only carve a subset out of a set you already have, so \(R\) can
+    never be formed &mdash; giving the ZFC axioms mathematics runs on today. Russell's own cure, the theory of
+    types, went further: it makes &ldquo;\(x \in x\)&rdquo; not false but <em>ungrammatical</em>, a question the
+    language refuses to let you ask. Either way, the lesson stuck: a set is no longer &ldquo;any collection you
+    can describe.&rdquo; Describability is not existence.
+  </p>
+
+  <!-- ============ 4. Why it matters ============ -->
+  <h2>4 · Why it matters</h2>
+  <p>
+    Russell's paradox is the third kind of paradox on this site, and the most violent. Zeno argued for a
+    conclusion that is <em>false</em>; Hilbert's hotel proves conclusions that are <em>true</em> but shocking;
+    Russell's loop has <em>no consistent conclusion at all</em> &mdash; it is a genuine antinomy, a contradiction
+    derived from principles that each seemed undeniable. Something undeniable had to be denied. That is what a
+    foundational crisis is, and this one forced mathematics to decide, explicitly and axiomatically, what its
+    objects are and which definitions are allowed to create things.
+  </p>
+  <p>
+    The deep culprit was <strong>self-reference plus unrestricted definition</strong> &mdash; a rule quantifying
+    over a totality that includes the very thing the rule defines. Tamed, the same ingredient turns out to be
+    astonishingly fruitful: two lectures from now in this course, G&ouml;del will build a statement that talks
+    about its own provability, and self-reference will return not as a disaster but as the engine of the
+    incompleteness theorem &mdash; the paradox weaponized into a proof. The registry clerk's endless loop and
+    G&ouml;del's theorem are, at bottom, close cousins.
+  </p>
+  <p>
+    And that is the closing note for our three machines. A finite computer rounds Zeno's steps away, overflows
+    before Hilbert's corridor ends, and oscillates forever on the barber's file. None of these is a bug in the
+    machines; each marks, honestly, the exact spot where the infinite &mdash; or the self-referential &mdash;
+    exceeds what any finite procedure can do. Mathematics gets past those spots not with bigger machines but
+    with sharper concepts: limits, bijections, axioms. That the human mind found them is the real story this
+    site has been telling.
+  </p>
+
+  <h2>Sources &amp; further reading</h2>
+  <ul class="refs">
+    <li>Russell, B. (1902), letter to Frege, and Frege's reply &mdash; in van Heijenoort, J. (ed., 1967), <em>From Frege to G&ouml;del</em>, Harvard University Press.</li>
+    <li>Frege, G. (1903), <em>Grundgesetze der Arithmetik</em>, vol. II, Appendix &mdash; Frege's response to the paradox.</li>
+    <li>Russell, B. (1919), <em>Introduction to Mathematical Philosophy</em>, Allen &amp; Unwin &mdash; the barber version.</li>
+    <li>Irvine, A. D. &amp; Deutsch, H., &ldquo;Russell's Paradox&rdquo;, <em>The Stanford Encyclopedia of Philosophy</em>.</li>
+    <li>Quine, W. V. (1966), &ldquo;The Ways of Paradox&rdquo; &mdash; the veridical / falsidical / antinomy classification used across this site.</li>
+  </ul>
+</main>
+
+<footer class="site-footer">
+  Built by Or &amp; Idor for <em>Milestones of Mathematical Thought</em>, Technion, Spring 2026.
+</footer>
+
+<script src="../../js/shared.js"></script>
+<script src="russell.js?v=1"></script>
+</body>
+</html>

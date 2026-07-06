@@ -308,7 +308,7 @@ input[type="range"] { accent-color: var(--accent); width: 150px; }
 }
 
 /* race status line */
-#race-status, #desk-status {
+#race-status, #desk-status, #game-status {
   padding: 10px 18px;
   font-size: 0.95rem;
   color: var(--muted);
@@ -361,6 +361,136 @@ input[type="range"] { accent-color: var(--accent); width: 150px; }
   font-size: 0.9rem;
   text-align: center;
 }
+
+/* ---------- barber game (Russell's Paradox) ---------- */
+
+.barber-game { padding: 18px; display: grid; gap: 18px; }
+
+.card-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 96px;
+  padding: 12px;
+  background: var(--bg-soft);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.drag-card {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  cursor: grab;
+  width: 168px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.3s ease;
+}
+.drag-card .top { display: flex; align-items: center; gap: 8px; }
+.drag-card .emoji { font-size: 1.4rem; }
+.drag-card .who { font-weight: 600; font-size: 0.95rem; }
+.drag-card .fact { font-size: 0.8rem; color: var(--muted); margin-top: 5px; line-height: 1.4; }
+.drag-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.drag-card.dragging {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+  transform: rotate(-2deg) scale(1.04);
+}
+.drag-card.placed { cursor: default; opacity: 0.85; width: auto; }
+.drag-card.placed .fact { display: none; }
+.drag-card.rejected { animation: card-shake 0.5s ease; }
+.drag-card.the-barber { border-color: var(--accent); }
+
+.bins { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.drop-bin {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  min-height: 150px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.drop-bin h4 {
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.drop-bin .bin-cards { display: flex; flex-direction: column; gap: 8px; }
+.drop-bin.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop-bin.reject { animation: bin-flash 0.6s ease; }
+
+@keyframes card-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px) rotate(-2deg); }
+  40% { transform: translateX(8px) rotate(2deg); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+@keyframes bin-flash {
+  0%, 100% { border-color: var(--border); background: transparent; }
+  30% { border-color: var(--red); background: rgba(224, 112, 90, 0.14); }
+  70% { border-color: var(--red); background: rgba(224, 112, 90, 0.10); }
+}
+
+.loop-strip {
+  display: none;
+  padding: 12px 16px;
+  border: 1px solid var(--red);
+  border-radius: 10px;
+  background: rgba(224, 112, 90, 0.08);
+  font-size: 0.93rem;
+  line-height: 1.6;
+}
+.loop-strip.visible { display: block; animation: callout-in 0.4s ease; }
+.loop-strip .loop-symbol { color: var(--red); font-weight: 700; }
+
+.logic-error {
+  display: none;
+  margin: 0 18px 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--red);
+  border-radius: var(--radius);
+  background: rgba(224, 112, 90, 0.07);
+}
+.logic-error.visible { display: block; animation: callout-in 0.5s ease; }
+.logic-error h3 {
+  margin: 0 0 10px;
+  color: var(--red);
+  letter-spacing: 0.04em;
+}
+.logic-error p { margin: 0.5em 0; font-size: 0.97rem; }
+
+.logic-machine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.logic-machine .lm-query { font-family: ui-monospace, Consolas, monospace; color: var(--text); }
+.logic-machine .lm-out {
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 700;
+  font-size: 1.15rem;
+  min-width: 3.5em;
+}
+.logic-machine .lm-out.t { color: var(--green); }
+.logic-machine .lm-out.f { color: var(--red); }
 
 /* ---------- Cantor bus panel (Hilbert's Hotel) ---------- */
 
@@ -436,4 +566,7 @@ input[type="range"] { accent-color: var(--accent); width: 150px; }
   input[type="range"] { width: 120px; }
   .cantor-table { font-size: 0.85rem; }
   .cantor-table td { padding: 3px 4px; }
+  .bins { grid-template-columns: 1fr; }
+  .drop-bin { min-height: 90px; }
+  .drag-card { width: 100%; }
 }

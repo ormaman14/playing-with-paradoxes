@@ -12,7 +12,7 @@ by Or & Idor.
 |---|---|
 | Achilles and the Tortoise (Zeno) | ✅ Live |
 | Hilbert's Hotel | ✅ Live |
-| Russell's Paradox | 🔜 Planned |
+| Russell's Paradox | ✅ Live |
 
 ## Running locally
 

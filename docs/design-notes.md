@@ -88,3 +88,29 @@ Events, `touch-action: pan-y` so vertical page scroll still works on mobile);
 camera pattern reused from the Achilles page; guests color-coded (amber
 originals, red walk-ins, green bus passengers) with identity labels so the
 bijections are visually traceable.
+
+## 2026-07-06 — Russell's Paradox
+
+**The barber registry game.** DOM-based (no canvas): six villager cards plus
+the barber, two "drawers" (drop bins). Two input paths — tap-to-select then
+tap-a-drawer, and full drag-and-drop via Pointer Events (works with touch;
+`touch-action: none` on cards). Regular villagers validate against the fact on
+their card; wrong placements bounce back with an explanation. The barber is
+rejected from *both* drawers, each rejection showing its half of the loop
+("if he shaves himself → the rule forbids it…"). After the second rejection a
+LOGIC ERROR panel opens: for a village, the exit is "no such barber exists" —
+which sets up the set-theoretic version, where that exit is bricked up by
+Frege's comprehension principle.
+
+**The machine-fails moment #3: non-termination.** The "village logic machine"
+widget tries to evaluate `does the barber shave himself?` and flips
+TRUE/FALSE every 600 ms with a step counter, forever. Completes the site's
+trilogy: rounding (Achilles), overflow (Hilbert), non-termination (Russell).
+
+**Content sections.** Naive comprehension → R = {x : x ∉ x} → R∈R ⇔ R∉R;
+Russell's June 16, 1902 letter to Frege (Grundgesetze II in press) and Frege's
+"foundation give way" reply; the fixes (Zermelo/ZFC restricted comprehension,
+Russell's type theory making x∈x ungrammatical). Section 4 classifies the
+site's three paradoxes per Quine: falsidical (Zeno), veridical (Hilbert),
+antinomy (Russell), and points forward to Gödel, where self-reference returns
+as a theorem instead of a disaster.
