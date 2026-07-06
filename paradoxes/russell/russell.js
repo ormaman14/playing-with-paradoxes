@@ -161,21 +161,30 @@
   }
 
   // ---------- interaction: tap-to-select + drag ----------
+  function select(card) {
+    if (state.broken || card.classList.contains('placed')) return;
+    document.querySelectorAll('.drag-card.selected').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.selected = card;
+    el.status.innerHTML = `${villager(card).who} in hand — now tap a drawer.`;
+  }
+
+  /** Hit-test drawers with the CARD's center, not the pointer — more forgiving. */
+  function binUnderCard(card) {
+    const r = card.getBoundingClientRect();
+    const cx = Math.min(Math.max(r.left + r.width / 2, 0), window.innerWidth - 1);
+    const cy = Math.min(Math.max(r.top + r.height / 2, 0), window.innerHeight - 1);
+    const under = document.elementFromPoint(cx, cy);
+    return under && under.closest('.drop-bin');
+  }
+
   function attachCardHandlers(card) {
     let drag = null;
     let suppressClick = false;
 
     card.addEventListener('click', () => {
       if (suppressClick) { suppressClick = false; return; }
-      if (state.broken || card.classList.contains('placed')) return;
-      const was = card.classList.contains('selected');
-      document.querySelectorAll('.drag-card.selected').forEach(c => c.classList.remove('selected'));
-      state.selected = null;
-      if (!was) {
-        card.classList.add('selected');
-        state.selected = card;
-        el.status.innerHTML = `${villager(card).who} in hand — now tap a drawer.`;
-      }
+      select(card); // re-clicking a selected card keeps it in hand
     });
 
     card.addEventListener('pointerdown', e => {
@@ -188,30 +197,36 @@
     card.addEventListener('pointermove', e => {
       if (!drag) return;
       if (!drag.moving) {
-        if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < 6) return;
+        if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < 12) return;
         drag.moving = true;
-        card.classList.add('dragging');
         card.style.width = card.getBoundingClientRect().width + 'px';
+        card.classList.add('dragging');
       }
       card.style.left = (e.clientX - drag.offX) + 'px';
       card.style.top = (e.clientY - drag.offY) + 'px';
-      const under = document.elementFromPoint(e.clientX, e.clientY);
-      const bin = under && under.closest('.drop-bin');
+      const bin = binUnderCard(card);
       Object.values(el.bins).forEach(b => b.classList.toggle('over', b === bin));
     });
 
     const endDrag = e => {
       if (!drag) return;
       const wasMoving = drag.moving;
+      const dist = Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY);
       drag = null;
       if (!wasMoving) return; // plain tap → let the click handler run
       suppressClick = true;
+      const bin = binUnderCard(card); // hit-test before the card snaps back
       card.classList.remove('dragging');
       card.style.left = card.style.top = card.style.width = '';
       Object.values(el.bins).forEach(b => b.classList.remove('over'));
-      const under = document.elementFromPoint(e.clientX, e.clientY);
-      const bin = under && under.closest('.drop-bin');
-      if (bin) attemptPlace(card, bin.id);
+      if (bin) {
+        attemptPlace(card, bin.id);
+      } else if (dist < 30) {
+        select(card); // a wobbly click, not a real drag — treat it as a tap
+      } else if (!state.broken) {
+        el.status.innerHTML =
+          `${villager(card).who} landed outside the drawers — drag him onto one, or tap him and then tap a drawer.`;
+      }
     };
     card.addEventListener('pointerup', endDrag);
     card.addEventListener('pointercancel', endDrag);
@@ -219,7 +234,12 @@
 
   Object.values(el.bins).forEach(bin => {
     bin.addEventListener('click', () => {
-      if (state.selected) attemptPlace(state.selected, bin.id);
+      if (state.selected) {
+        attemptPlace(state.selected, bin.id);
+      } else if (!state.broken) {
+        el.status.innerHTML =
+          'Nothing in hand — tap a villager card first, then tap a drawer (or drag the card straight in).';
+      }
     });
   });
 
