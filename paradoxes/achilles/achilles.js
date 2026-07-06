@@ -366,9 +366,14 @@
 
   function drawRunner(emoji, color, name, px, trackY, W) {
     if (px < -60 || px > W + 60) return;
+    // emoji face left by default — mirror them so they run to the right
+    ctx.save();
+    ctx.translate(px, trackY - 12);
+    ctx.scale(-1, 1);
     ctx.font = '30px serif';
     ctx.textAlign = 'center';
-    ctx.fillText(emoji, px, trackY - 12);
+    ctx.fillText(emoji, 0, 0);
+    ctx.restore();
     ctx.font = '11px Inter, sans-serif';
     ctx.fillStyle = color;
     ctx.fillText(name, px, trackY - 48);
