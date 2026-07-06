@@ -49,3 +49,42 @@ meander divider; Fraunces (serif) for headings, Inter for body. Playful touches
 **AI use.** Site planned and coded with Claude Code (Anthropic), per the course's
 encouragement of AI tools for applied projects; concept, paradox selection, and
 pedagogical direction are ours (see email exchange with the instructor).
+
+## 2026-07-06 — Deployment
+
+Published to GitHub Pages: https://ormaman14.github.io/playing-with-paradoxes/
+(repo `ormaman14/playing-with-paradoxes`, auto-deploys from `master`). Verified
+the site is reachable without any login — a submission requirement.
+
+## 2026-07-06 — Hilbert's Hotel
+
+**Key design choice: the hotel state is a rule, not a list.** We never store an
+infinite guest register; we store the *sequence of operations* (shift n→n+1,
+bus n→2n) and compute the occupant of any room on demand by inverting the ops.
+This mirrors the mathematical point exactly: after Cantor, infinity is handled
+by functions/bijections, not by enumeration. The page's philosophy section
+draws the explicit contrast with Zeno: Achilles' stages had to be executed one
+after another (and our simulation collapsed); the manager's announcement moves
+ℵ₀ guests in one act because it is a rule.
+
+**Scenarios.** (1) "+1 guest": everyone shifts up one; the k-th walk-in is
+visible in room k after later shifts. (2) "Infinite bus": n→2n, originals on
+evens, passengers on odds — the corridor visibly interleaves two infinite
+populations. (3) **"The Cantor bus"** (added beyond the original proposal): a
+bus with one passenger per real in [0,1]. An animated diagonal-argument table
+(digits of √2−1, e−2, π−3, γ, ln2, φ−1, log₁₀2) builds the stowaway ρ = 0.555…
+and the hotel refuses a bus for the first time — introducing levels of infinity
+(course lecture of June 16).
+
+**The machine-fails moment #2: integer overflow.** "Find the last room" is a
+hold-to-warp scroll that accelerates exponentially (~1.4 orders of magnitude
+per second). Around room 2^53 JavaScript doubles can no longer distinguish n
+from n+1; the simulation detects `n + 1 === n`, stops, and explains: the machine
+ran out of numbers before the hotel ran out of rooms. Companion piece to the
+Achilles floating-point collapse — rounding there, overflow here.
+
+**Interaction details.** Canvas corridor with drag/swipe panning (Pointer
+Events, `touch-action: pan-y` so vertical page scroll still works on mobile);
+camera pattern reused from the Achilles page; guests color-coded (amber
+originals, red walk-ins, green bus passengers) with identity labels so the
+bijections are visually traceable.

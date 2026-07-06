@@ -192,7 +192,7 @@ a.card:hover {
 
 .sim-canvas-wrap { position: relative; background: var(--bg-soft); }
 
-#race-canvas { display: block; width: 100%; height: 320px; }
+#race-canvas, .sim-canvas { display: block; width: 100%; height: 320px; touch-action: pan-y; }
 
 .sim-controls {
   display: flex;
@@ -308,7 +308,7 @@ input[type="range"] { accent-color: var(--accent); width: 150px; }
 }
 
 /* race status line */
-#race-status {
+#race-status, #desk-status {
   padding: 10px 18px;
   font-size: 0.95rem;
   color: var(--muted);
@@ -362,8 +362,78 @@ input[type="range"] { accent-color: var(--accent); width: 150px; }
   text-align: center;
 }
 
+/* ---------- Cantor bus panel (Hilbert's Hotel) ---------- */
+
+.cantor-panel {
+  display: none;
+  padding: 16px 18px 20px;
+  border-top: 1px solid var(--border);
+  overflow-x: auto;
+}
+.cantor-panel.visible { display: block; animation: callout-in 0.5s ease; }
+.cantor-panel .label { font-size: 0.85rem; color: var(--muted); margin-bottom: 10px; }
+
+.cantor-table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.98rem;
+  margin: 0 auto;
+}
+.cantor-table td {
+  padding: 4px 7px;
+  text-align: center;
+  color: var(--text);
+}
+.cantor-table td.room-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: right;
+  padding-right: 14px;
+  white-space: nowrap;
+}
+.cantor-table td.dg { border-radius: 6px; min-width: 1.6em; transition: background 0.3s, color 0.3s; }
+.cantor-table td.dg.diag-hi {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 700;
+}
+.cantor-table tr.stowaway td { padding-top: 12px; }
+.cantor-table tr.stowaway td.dg { color: var(--red); font-weight: 700; }
+.cantor-table tr.stowaway td.room-label { color: var(--red); }
+
+.cantor-verdict {
+  margin-top: 14px;
+  font-size: 0.98rem;
+  color: var(--text);
+  text-align: center;
+  min-height: 1.4em;
+}
+.cantor-verdict .no-vacancy {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 16px;
+  border: 2px solid var(--red);
+  border-radius: 8px;
+  color: var(--red);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.12em;
+  animation: neon-flicker 1.6s infinite;
+}
+
+@keyframes neon-flicker {
+  0%, 100% { opacity: 1; }
+  8% { opacity: 0.5; }
+  10% { opacity: 1; }
+  46% { opacity: 1; }
+  50% { opacity: 0.6; }
+  54% { opacity: 1; }
+}
+
 @media (max-width: 640px) {
   body { font-size: 16px; }
-  #race-canvas { height: 240px; }
+  #race-canvas, .sim-canvas { height: 240px; }
   input[type="range"] { width: 120px; }
+  .cantor-table { font-size: 0.85rem; }
+  .cantor-table td { padding: 3px 4px; }
 }

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hilbert's Hotel — Paradoxes</title>
+  <meta name="description" content="An interactive simulation of Hilbert's Grand Hotel: a fully occupied infinite hotel that always has room for more — until the Cantor bus arrives.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏨</text></svg>">
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]});"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand"><a href="../../">Playing with Paradoxes</a></div>
+  <a class="back-link" href="../../">&larr; All paradoxes</a>
+</header>
+<div class="meander"></div>
+
+<main>
+  <h1>Hilbert's Hotel</h1>
+  <p class="lead">David Hilbert, G&ouml;ttingen, 1924 &mdash; a hotel where &ldquo;every room is occupied&rdquo; and &ldquo;we have room for you&rdquo; are both true, and what finally overbooks it.</p>
+
+  <!-- ============ 1. The story ============ -->
+  <h2>1 · The story</h2>
+  <p>
+    Imagine a hotel with infinitely many rooms, numbered 1, 2, 3, &hellip; &mdash; one room for every natural
+    number, with no last room. Tonight the hotel is <em>completely full</em>: every single room has a guest in it.
+    A traveler arrives at the front desk and asks for a room.
+  </p>
+  <p>
+    In any ordinary hotel, the story ends there. But the manager of the Grand Hotel does not apologize. She
+    switches on the intercom and makes one announcement: <em>&ldquo;Dear guests, would everyone kindly move to
+    the room whose number is one higher than your current room.&rdquo;</em> The guest in room 1 moves to room 2,
+    the guest in room 2 to room 3, and so on &mdash; every guest still has a room, because there is no last guest
+    who falls off the end. Room 1 is now empty, and the traveler checks in. A full hotel just accommodated one
+    more guest, and it is <em>still full</em>.
+  </p>
+  <p>
+    The thought experiment comes from a 1924 G&ouml;ttingen lecture by David Hilbert, and reached the wider world
+    through George Gamow's <em>One Two Three&hellip; Infinity</em> (1947). Unlike Zeno's race, nothing here is an
+    illusion or a trick to be debunked: every step of the story is mathematically sound. The paradox is only that
+    it collides head-on with intuitions we built in a world of finite hotels. Try it yourself below &mdash;
+    including the one bus that even this hotel cannot handle.
+  </p>
+
+  <!-- ============ 2. The interactive hotel ============ -->
+  <h2>2 · Stand at the front desk</h2>
+  <p>
+    You are the manager. The corridor below shows the first stretch of the hotel &mdash; drag it (or swipe) to
+    wander right; there is always more corridor. <span style="color:var(--accent)">Amber</span> guests
+    are the original residents, <span style="color:var(--red)">red</span> are walk-in newcomers,
+    <span style="color:var(--green)">green</span> are bus passengers. Every room shows who currently sleeps in it.
+  </p>
+
+  <div class="sim">
+    <div class="sim-canvas-wrap">
+      <canvas id="hotel-canvas" class="sim-canvas"></canvas>
+    </div>
+    <div class="sim-controls">
+      <button id="btn-guest">+1 guest arrives</button>
+      <button id="btn-bus" class="secondary">🚌 An infinite bus arrives</button>
+      <button id="btn-cantor" class="secondary">🚌 The Cantor bus arrives</button>
+      <button id="btn-lastroom" class="secondary">🔭 Find the last room (hold)</button>
+      <span class="spacer"></span>
+      <button id="btn-reset" class="ghost">Reset</button>
+    </div>
+    <div id="desk-status">Welcome to the Grand Hotel. Every room is occupied.</div>
+    <div class="sim-stats">
+      <div class="stat"><div class="label">Occupancy</div><div class="value" id="stat-occupancy">Full</div></div>
+      <div class="stat"><div class="label">Guests relocated by last move</div><div class="value" id="stat-moved">&mdash;</div></div>
+      <div class="stat"><div class="label">New guests checked in</div><div class="value" id="stat-checkins">0</div></div>
+      <div class="stat"><div class="label">Empty rooms created</div><div class="value" id="stat-empty">0</div></div>
+      <div class="stat highlight"><div class="label">Highest room visited</div><div class="value" id="stat-highroom">1</div></div>
+    </div>
+    <div class="cantor-panel" id="cantor-panel">
+      <div class="label">FRONT DESK — proposed room assignment for the Cantor bus (passengers are named by their seat: a real number between 0 and 1):</div>
+      <table class="cantor-table" id="cantor-table"></table>
+      <div class="cantor-verdict" id="cantor-verdict"></div>
+    </div>
+  </div>
+
+  <!-- The overflow callout -->
+  <aside class="callout" id="overflow-callout">
+    <h3>The computer just ran out of numbers.</h3>
+    <p>
+      Somewhere around room <strong>9,007,199,254,740,992</strong> (that is 2<sup>53</sup>), something strange
+      happened to the doors: two neighboring rooms started displaying the <em>same</em> number. The hotel didn't
+      run out of rooms &mdash; the computer ran out of numbers. JavaScript stores numbers in 64-bit floating point,
+      which can only tell integers apart up to 2<sup>53</sup>; beyond that, <code>n + 1 === n</code>.
+    </p>
+    <p>
+      The same lesson as the Achilles page, from the opposite direction: there, the machine could not make its
+      steps small enough; here, it cannot count high enough. The hotel's infinity was never <em>in</em> the
+      machine &mdash; it lives in the rule &ldquo;room \(n \mapsto n+1\)&rdquo;, which needs no counting at all.
+    </p>
+  </aside>
+
+  <p class="note">
+    <strong>Try this:</strong> press <em>+1 guest</em> a few times and watch where the original guests end up.
+    Then send in the infinite bus and look at how the two infinite crowds share one corridor. Then try the Cantor
+    bus &mdash; and watch the front desk fail for the first time. Finally, hold <em>Find the last room</em> and
+    see how far you get.
+  </p>
+
+  <!-- ============ 3. The mathematics ============ -->
+  <h2>3 · What mathematics can say</h2>
+  <p>
+    The hotel runs on one idea: <strong>two sets have the same size if their members can be paired off perfectly</strong>
+    &mdash; a one-to-one correspondence, or <em>bijection</em>. For finite sets this agrees with counting. For infinite
+    sets, it is the only definition we have &mdash; and it produces the hotel's magic. The intercom announcement
+  </p>
+  <p>
+    $$ f(n) = n + 1 $$
+  </p>
+  <p>
+    pairs the rooms \(\{1, 2, 3, \ldots\}\) perfectly with the rooms \(\{2, 3, 4, \ldots\}\): nobody is left without
+    a room, nobody has to share, and room 1 falls out of the pairing &mdash; free for the newcomer. The bus works the
+    same way with
+  </p>
+  <p>
+    $$ g(n) = 2n, $$
+  </p>
+  <p>
+    which pairs <em>all</em> the current guests with just the even rooms, leaving the infinitely many odd rooms for the
+    infinitely many passengers: passenger \(k\) takes room \(2k - 1\). Two infinite crowds, one full hotel, everybody
+    sleeps. In fact this property is so characteristic that Dedekind used it as the <em>definition</em>: a set is
+    infinite precisely when it can be paired off with a proper part of itself. What looks like a bug of infinity is
+    its defining feature.
+  </p>
+  <p>
+    Sets that can be paired with \(\mathbb{N} = \{1, 2, 3, \ldots\}\) are called <strong>countable</strong>, and the
+    hotel is their playground: it absorbs one newcomer, a busload, even countably many buses. So is every infinity
+    countable? In 1891 Georg Cantor showed the answer is <em>no</em> &mdash; and the hotel meets its match. Suppose
+    the front desk proposes <em>any</em> room list for the passengers of the Cantor bus, whose seats are the real
+    numbers in \([0,1]\):
+  </p>
+  <p>
+    $$ \text{room } 1 \to 0.d_{11}d_{12}d_{13}\ldots, \quad \text{room } 2 \to 0.d_{21}d_{22}d_{23}\ldots, \quad \text{room } 3 \to 0.d_{31}d_{32}d_{33}\ldots, \;\ldots $$
+  </p>
+  <p>
+    Build a stowaway number \(\rho\) by walking down the diagonal and changing every digit: its \(n\)-th digit differs
+    from \(d_{nn}\). Then \(\rho\) disagrees with the guest of room \(n\) at the \(n\)-th decimal place &mdash; for
+    every \(n\). The stowaway is on the bus but on nobody's list, <em>no matter what list the desk tries</em>. The reals
+    are strictly more numerous than the naturals: infinity comes in sizes, \( \aleph_0 < \mathfrak{c} \), and Cantor's
+    tower of infinities \( \aleph_0, \aleph_1, \aleph_2, \ldots \) rises from exactly this argument.
+  </p>
+
+  <!-- ============ 4. What does it mean? ============ -->
+  <h2>4 · What does it mean?</h2>
+  <p>
+    Zeno's race and Hilbert's hotel are opposite kinds of paradox. Zeno argues for a conclusion everyone knows is
+    <em>false</em> (Achilles never wins), so something in the argument must give. The hotel's conclusions are
+    <em>true</em> &mdash; provably so &mdash; and what gives is our intuition. Philosophers call this a
+    <em>veridical</em> paradox: the shock is the evidence that our everyday notion of &ldquo;size&rdquo; and
+    &ldquo;full&rdquo; carries a hidden assumption of finiteness. Drop the assumption, and &ldquo;full but
+    accepting guests&rdquo; is no more contradictory than &ldquo;moved one room over.&rdquo;
+  </p>
+  <p>
+    Notice also <em>how</em> the hotel handles infinity &mdash; because it is the exact opposite of Zeno's runner.
+    Achilles had to pass through his stages <em>one after another</em>, and no step-by-step process finishes
+    infinitely many acts; our Achilles simulation duly collapsed after seventeen clicks. The hotel manager never
+    visits a single room. She states a <em>rule</em> &mdash; \(n \mapsto n+1\) &mdash; and infinitely many guests
+    move in one act. This is precisely the move modern mathematics made after Cantor: infinity became manageable
+    not by enumerating it, but by reasoning about functions and correspondences as finished wholes. (Whether such
+    <em>actual</em> infinities exist anywhere outside mathematics &mdash; whether any real corridor could hold
+    them &mdash; is a question Hilbert's contemporaries fought over, and physics still cannot answer.)
+  </p>
+  <p>
+    Our simulation is honest about the same limit as always: your screen only ever shows finitely many rooms, and
+    if you hunt for the corridor's end, the machine gives out at \(2^{53}\) before the hotel gives out at all.
+    The infinity is not in the pixels; it is in the rule. That a finite mind &mdash; or machine &mdash; can still
+    reason reliably about it is, as Hilbert put it, the mathematician's paradise, and no one was going to expel us
+    from it.
+  </p>
+
+  <h2>Sources &amp; further reading</h2>
+  <ul class="refs">
+    <li>Hilbert, D. (1924), &ldquo;&Uuml;ber das Unendliche&rdquo;, G&ouml;ttingen lecture; see Kragh, H. (2014), &ldquo;The True (?) Story of Hilbert's Infinite Hotel&rdquo;, arXiv:1403.0059.</li>
+    <li>Gamow, G. (1947), <em>One Two Three&hellip; Infinity</em>, Viking Press &mdash; the telling that made the hotel famous.</li>
+    <li>Cantor, G. (1891), &ldquo;&Uuml;ber eine elementare Frage der Mannigfaltigkeitslehre&rdquo; &mdash; the diagonal argument.</li>
+    <li>Bagaria, J., &ldquo;Set Theory&rdquo;, <em>The Stanford Encyclopedia of Philosophy</em>.</li>
+    <li>Courant, R. &amp; Robbins, H. (1996), <em>What is Mathematics?</em>, Oxford University Press &mdash; countability and the continuum (see course reading list).</li>
+  </ul>
+</main>
+
+<footer class="site-footer">
+  Built by Or &amp; Idor for <em>Milestones of Mathematical Thought</em>, Technion, Spring 2026.
+</footer>
+
+<script src="../../js/shared.js"></script>
+<script src="hilbert.js?v=2"></script>
+</body>
+</html>
