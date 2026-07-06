@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achilles and the Tortoise — Paradoxes</title>
+  <meta name="description" content="An interactive simulation of Zeno's Achilles and the Tortoise paradox: step through the infinite regress, watch the geometric series converge, and see where the computer itself gives up.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐢</text></svg>">
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '\\(', right: '\\)', display: false}
+          ]});"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand"><a href="../../">Playing with Paradoxes</a></div>
+  <a class="back-link" href="../../">&larr; All paradoxes</a>
+</header>
+<div class="meander"></div>
+
+<main>
+  <h1>Achilles and the Tortoise</h1>
+  <p class="lead">Zeno of Elea, c. 450 BCE &mdash; an argument that motion is impossible, which took mathematics two millennia to answer, and philosophy is arguing about still.</p>
+
+  <!-- ============ 1. The paradox ============ -->
+  <h2>1 · The paradox</h2>
+  <p>
+    Achilles, the fastest of the Greeks, races a tortoise. Being a good sport, he grants it a head start.
+    Zeno argues that Achilles can <em>never</em> overtake it:
+  </p>
+  <blockquote>
+    &ldquo;In a race, the quickest runner can never overtake the slowest, since the pursuer must first reach
+    the point whence the pursued started, so that the slower must always hold a lead.&rdquo;
+    <footer>&mdash; Zeno's argument, as reported by Aristotle, <em>Physics</em> VI:9, 239b14</footer>
+  </blockquote>
+  <p>
+    Before Achilles catches the tortoise, he must reach the tortoise's starting point. By the time he gets there,
+    the tortoise has crawled a little further. Achilles must now reach <em>that</em> point &mdash; but meanwhile the
+    tortoise has moved again. However fast Achilles runs, whenever he arrives where the tortoise <em>was</em>,
+    the tortoise is already somewhere it <em>wasn't</em>. The chase decomposes into infinitely many stages, and
+    at the end of every single one of them, the tortoise is still ahead.
+  </p>
+  <p>
+    Of course, real runners overtake real tortoises all the time. That is exactly what makes this a paradox:
+    a seemingly airtight argument for a conclusion we know to be false. The question is not <em>whether</em>
+    Achilles wins &mdash; it's <em>what, precisely, is wrong with the argument</em>.
+  </p>
+
+  <!-- ============ 2. The race ============ -->
+  <h2>2 · Run the race yourself</h2>
+  <p>
+    Below is Zeno's race. <strong>Zeno step</strong> advances the argument by one stage: Achilles runs to where
+    the tortoise just was, while the tortoise crawls ahead. The camera zooms into the ever-shrinking gap, so you
+    can keep going as long as you like &mdash; Zeno promises the gap never closes. The counters keep track of the
+    distance Achilles has covered so far, term by term.
+    Then press <strong>Run the real race</strong> and watch what nature does with Zeno's infinitely many stages.
+  </p>
+
+  <div class="sim">
+    <div class="sim-canvas-wrap">
+      <canvas id="race-canvas"></canvas>
+    </div>
+    <div class="sim-controls">
+      <button id="btn-step">Zeno step &rarr;</button>
+      <button id="btn-step10" class="secondary">&times;10 steps</button>
+      <button id="btn-race" class="secondary">&#9654; Run the real race</button>
+      <span class="spacer"></span>
+      <button id="btn-reset" class="ghost">Reset</button>
+    </div>
+    <div class="sim-sliders">
+      <label>Head start
+        <input type="range" id="slider-headstart" min="20" max="200" step="10" value="100">
+        <output id="out-headstart">100 m</output>
+      </label>
+      <label>Achilles is
+        <input type="range" id="slider-ratio" min="2" max="20" step="1" value="10">
+        <output id="out-ratio">10&times; faster</output>
+      </label>
+    </div>
+    <div id="race-status"></div>
+    <div class="sim-stats">
+      <div class="stat"><div class="label">Zeno steps taken</div><div class="value" id="stat-step">0</div></div>
+      <div class="stat"><div class="label">Gap to tortoise</div><div class="value" id="stat-gap">&mdash;</div></div>
+      <div class="stat"><div class="label">Achilles has run</div><div class="value" id="stat-sum">0 <span class="unit">m</span></div></div>
+      <div class="stat"><div class="label">Story time elapsed</div><div class="value" id="stat-time">0 <span class="unit">s</span></div></div>
+      <div class="stat highlight"><div class="label">Where math says they meet</div><div class="value" id="stat-limit">&mdash;</div></div>
+    </div>
+    <div class="sum-section">
+      <div class="label">The distance Achilles has covered, as a sum of Zeno's stages:</div>
+      <div id="series-terms">&mdash;</div>
+      <div class="sum-bar-wrap">
+        <div id="sum-bar"></div>
+        <div class="sum-bar-limit">
+          <span>0 m</span>
+          <span>Each colored segment is one Zeno stage &mdash; the bar never quite fills.</span>
+          <span id="sum-bar-max">&mdash;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The floating-point moment -->
+  <aside class="callout" id="float-callout">
+    <h3>The computer just gave up on Zeno.</h3>
+    <p>
+      After <strong><span id="callout-steps">?</span> steps</strong>, the simulation reports a gap of exactly
+      <strong>0</strong> &mdash; Achilles has &ldquo;caught&rdquo; the tortoise. But don't be fooled: the computer did
+      <em>not</em> complete infinitely many steps. A JavaScript number holds about 16 significant decimal digits;
+      once the gap became smaller than that precision, adding it to the tortoise's position changed nothing,
+      and the gap <em>rounded away</em>.
+    </p>
+    <p>
+      This is worth pausing on. We set out to simulate an infinite process, and what we got is a finite machine
+      quietly cutting the process short. No computer &mdash; no physical procedure of any kind that takes a minimum
+      time per step &mdash; can literally run through infinitely many steps one at a time. In a sense, the failure of
+      this simulation is the most honest thing it shows: it is <em>exactly</em> Zeno's challenge, materialized
+      in silicon. Keep this in mind for section 4.
+    </p>
+  </aside>
+
+  <p class="note">
+    <strong>Try this:</strong> keep clicking <em>Zeno step</em> (or &times;10) and watch the gap counter.
+    It shrinks by the same factor every time and never reaches zero &mdash; until, suddenly, it does.
+    Something happens around step 15&ndash;50 (depending on the speed ratio) that Zeno did not predict.
+    Then read on.
+  </p>
+
+  <!-- ============ 3. The mathematics ============ -->
+  <h2>3 · What mathematics can say</h2>
+  <p>
+    Let the tortoise start \(H\) meters ahead, and let Achilles run \(k\) times faster
+    (in the default race, \(H = 100\) and \(k = 10\)). In Zeno's first stage Achilles covers the head start,
+    \(H\). Meanwhile the tortoise, being \(k\) times slower, advances \(H/k\). In the second stage Achilles
+    covers that \(H/k\) while the tortoise gains \(H/k^2\), and so on. The total distance Achilles runs across
+    <em>all</em> of Zeno's stages is
+  </p>
+  <p>
+    $$ S \;=\; H + \frac{H}{k} + \frac{H}{k^2} + \frac{H}{k^3} + \cdots \;=\; \sum_{n=0}^{\infty} \frac{H}{k^n}. $$
+  </p>
+  <p>
+    This is a <strong>geometric series</strong> with ratio \(r = 1/k < 1\). Its partial sums have a closed form
+    &mdash; multiply by \(r\), subtract, and everything telescopes:
+  </p>
+  <p>
+    $$ S_N \;=\; H\,\frac{1 - r^{N+1}}{1 - r} \;\xrightarrow{\;N \to \infty\;}\; \frac{H}{1-r} \;=\; H\,\frac{k}{k-1}. $$
+  </p>
+  <p>
+    For the default race: \(S = 100 \cdot \tfrac{10}{9} = 111.\overline{1}\) meters &mdash; the golden dashed line
+    in the simulation. The same argument applies to time: each stage takes \(1/k\) as long as the one before, so the
+    infinitely many stages consume a total of \(\tfrac{100}{10}\cdot\tfrac{10}{9} = 11.\overline{1}\) seconds.
+    (Sanity check without any series: Achilles closes the 100&thinsp;m gap at 9&thinsp;m/s, which takes
+    \(100/9 = 11.\overline{1}\) s. The two computations agree.)
+  </p>
+  <p>
+    This is the decisive mathematical insight, and it was genuinely unavailable to Zeno's contemporaries:
+    <strong>infinitely many positive quantities can add up to a finite amount</strong>. Zeno's stages are
+    infinite in <em>number</em>, but they shrink fast enough that they fit inside 111.11 meters and 11.11 seconds.
+    The argument's hidden premise &mdash; that an infinity of stages must take forever &mdash; is simply false.
+    The rigorous theory of convergence (Cauchy and Weierstrass, 19th century) makes this precise: the partial sums
+    \(S_N\) come arbitrarily close to \(111.\overline{1}\), and the &ldquo;sum&rdquo; of the series is
+    <em>defined</em> as that limit.
+  </p>
+  <p>
+    Notice what the mathematics delivers: it tells us exactly <em>where</em> and <em>when</em> Achilles draws level,
+    and it dissolves the claim that infinitely many stages need infinite time. What it does <em>not</em> obviously do
+    is explain how the stages get <em>completed</em>. That's the next section.
+  </p>
+
+  <!-- ============ 4. So is the paradox resolved? ============ -->
+  <h2>4 · So is the paradox resolved?</h2>
+  <p>
+    It is tempting to stop here and declare victory: the series converges, therefore Zeno was wrong, case closed.
+    Many textbooks do exactly that. But look more carefully at what each side is claiming.
+  </p>
+  <p>
+    The convergence argument answers the question <em>&ldquo;where and when would Achilles catch the tortoise?&rdquo;</em>
+    with beautiful precision. Zeno, however, was asking a different question: <em>&ldquo;how can a sequence of acts that
+    has no last member ever be finished?&rdquo;</em> Summing the series presupposes that all the stages get completed and
+    computes where their completion happens. It doesn't explain what it even means to <em>perform</em> infinitely many
+    acts one after another &mdash; what philosophers now call a <strong>supertask</strong>. Assigning a finite limit to the
+    series and explaining the completability of the run are not the same thing.
+  </p>
+  <p>
+    Aristotle's response was to distinguish two kinds of infinity: the runner's path is <em>potentially</em> infinitely
+    divisible &mdash; you can mark as many division points as you like &mdash; but the runner never confronts an
+    <em>actually</em> completed infinity of parts; he just runs. On this view Zeno's infinite decomposition is something
+    we <em>describe onto</em> the motion, not something the motion has to <em>do</em>. Modern discussions push further:
+    Max Black argued that completing infinitely many distinct acts is logically incoherent; James Thomson invented his
+    famous lamp (switched infinitely often in one minute &mdash; is it on or off at the end?) to sharpen the puzzle;
+    Paul Benacerraf and Adolf Gr&uuml;nbaum replied that such supertasks may be perfectly consistent, just underdetermined.
+    The debate is genuinely still open &mdash; not about whether Achilles wins, but about what his winning tells us
+    regarding infinity, continuity, and whether spacetime itself is infinitely divisible.
+  </p>
+  <p>
+    And here our simulation earns its keep &mdash; precisely by failing. If you pushed the race far enough, you saw the
+    computer <em>round the gap away</em> after a few dozen steps: a finite machine cannot execute Zeno's stages one by
+    one, so it cheats. Every step-by-step process with a minimum cost per step faces the same wall; the only reason the
+    real Achilles finishes is that motion, whatever it is, is <em>not</em> a step-by-step process. Contrast the two
+    buttons in the simulation: <em>Zeno step</em>, pressed forever, never completes the race &mdash; <em>Run the real
+    race</em> completes it in eleven unremarkable seconds. The whole paradox lives in the space between those two buttons.
+  </p>
+  <p>
+    That, more than any formula, is the milestone this paradox represents: Zeno forced mathematics to eventually build
+    a rigorous theory of limits and the continuum &mdash; and even equipped with that theory, we are still arguing about
+    what infinity has to do with the world. A recurring theme of this course, first spotted by a philosopher watching
+    an imaginary footrace 2,500 years ago.
+  </p>
+
+  <h2>Sources &amp; further reading</h2>
+  <ul class="refs">
+    <li>Aristotle, <em>Physics</em>, Book VI, Chapter 9 (239b) &mdash; the earliest surviving statement of Zeno's paradoxes.</li>
+    <li>Huggett, N., &ldquo;Zeno's Paradoxes&rdquo;, <em>The Stanford Encyclopedia of Philosophy</em>.</li>
+    <li>Salmon, W. (ed.) (2001), <em>Zeno's Paradoxes</em>, Hackett &mdash; anthology including Black, Thomson, Benacerraf and Gr&uuml;nbaum on supertasks.</li>
+    <li>Courant, R. &amp; Robbins, H. (1996), <em>What is Mathematics?</em>, Oxford University Press &mdash; geometric series and limits (see course reading list).</li>
+    <li>Black, M. (1951), &ldquo;Achilles and the Tortoise&rdquo;, <em>Analysis</em> 11(5); Thomson, J. (1954), &ldquo;Tasks and Super-Tasks&rdquo;, <em>Analysis</em> 15(1).</li>
+  </ul>
+</main>
+
+<footer class="site-footer">
+  Built by Or &amp; Idor for <em>Milestones of Mathematical Thought</em>, Technion, Spring 2026.
+</footer>
+
+<script src="../../js/shared.js"></script>
+<script src="achilles.js"></script>
+</body>
+</html>
