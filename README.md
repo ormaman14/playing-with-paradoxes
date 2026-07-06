@@ -4,7 +4,7 @@ An interactive website visualizing famous mathematical paradoxes, built as the a
 final project for **Milestones of Mathematical Thought** (Technion, Spring 2026)
 by Or & Idor.
 
-**Live site:** _(GitHub Pages URL goes here after deployment)_
+**Live site:** https://ormaman14.github.io/playing-with-paradoxes/
 
 ## Paradoxes
 
