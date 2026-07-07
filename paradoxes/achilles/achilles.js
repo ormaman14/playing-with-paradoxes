@@ -63,6 +63,63 @@
   const limitTime = () => (sim.H / V_ACHILLES) * sim.k / (sim.k - 1);
   const gap = () => sim.t - sim.a;
 
+  // ---- exact rational display of the limits ------------------------------
+  // The limits are exact: distance = H·k/(k−1) m, time = H·k/(10(k−1)) s,
+  // with H and k integers from the sliders. Displaying them as rounded
+  // floats would undermine the whole point — so we do long division and
+  // render the true repeating decimal (overline) plus the fraction.
+
+  function gcd(a, b) { while (b) { const t = a % b; a = b; b = t; } return a; }
+
+  /** Long division of num/den → integer part, non-repeating prefix, repetend. */
+  function exactParts(num, den) {
+    const g = gcd(num, den);
+    num /= g; den /= g;
+    const int = Math.floor(num / den);
+    let r = num % den;
+    const digits = [];
+    const seen = new Map(); // remainder → index of the digit it produced
+    let repStart = -1;
+    while (r !== 0) {
+      if (seen.has(r)) { repStart = seen.get(r); break; }
+      seen.set(r, digits.length);
+      r *= 10;
+      digits.push(Math.floor(r / den));
+      r %= den;
+    }
+    return {
+      int, num, den,
+      prefix: repStart === -1 ? digits.join('') : digits.slice(0, repStart).join(''),
+      rep: repStart === -1 ? '' : digits.slice(repStart).join(''),
+    };
+  }
+
+  /** Exact HTML value: repeating decimal with overline + fraction, or "exactly". */
+  function exactHTML(num, den, unit) {
+    const p = exactParts(num, den);
+    const frac = `${p.num}⁄${p.den}`;
+    if (p.rep === '') {
+      const dec = p.prefix ? `${p.int}.${p.prefix}` : String(p.int);
+      return `${dec} ${unit} <span class="unit">(exactly)</span>`;
+    }
+    if (p.rep.length <= 9) {
+      return `${p.int}.${p.prefix}<span class="rep">${p.rep}</span> ${unit} <span class="unit">(= ${frac})</span>`;
+    }
+    return `${frac} ${unit} <span class="unit">(repeating decimal, period ${p.rep.length})</span>`;
+  }
+
+  /** Plain-text exact form for canvas labels: decimal if terminating, else fraction. */
+  function exactText(num, den, unit) {
+    const p = exactParts(num, den);
+    if (p.rep === '') {
+      return `${p.prefix ? `${p.int}.${p.prefix}` : p.int} ${unit}`;
+    }
+    return `${p.num}/${p.den} ${unit}`;
+  }
+
+  const distNumDen = () => [sim.H * sim.k, sim.k - 1];
+  const timeNumDen = () => [sim.H * sim.k, V_ACHILLES * (sim.k - 1)];
+
   // ---------- reset ----------
   function reset() {
     sim.H = Number(el.headStart.value);
@@ -165,8 +222,8 @@
     if (!race.done && race.t >= tStar) {
       race.done = true;
       el.status.innerHTML =
-        `🏁 Achilles drew level at <strong>t = ${fmtNum(tStar, 6)} s</strong>, ` +
-        `${fmtNum(limitDist(), 6)} m from his start — exactly where the series says. ` +
+        `🏁 Achilles drew level at <strong>t = ${exactHTML(...timeNumDen(), 's')}</strong>, ` +
+        `${exactHTML(...distNumDen(), 'm')} from his start — exactly where the series says. ` +
         `He passed through <em>all</em> of Zeno's stages without pressing any buttons.`;
     }
     // stop once Achilles has visibly overtaken
@@ -190,8 +247,8 @@
     const elapsed = sim.mode === 'realtime' || race.t > 0 ? race.t : sim.a / V_ACHILLES;
     el.statTime.innerHTML = `${fmtNum(elapsed, 12)} <span class="unit">s</span>`;
     el.statLimit.innerHTML =
-      `${fmtNum(limitDist(), 12)} <span class="unit">m</span> &middot; ${fmtNum(limitTime(), 12)} <span class="unit">s</span>`;
-    el.sumBarMax.innerHTML = `${fmtNum(limitDist(), 6)} m`;
+      `${exactHTML(...distNumDen(), 'm')} &middot; ${exactHTML(...timeNumDen(), 's')}`;
+    el.sumBarMax.innerHTML = exactHTML(...distNumDen(), 'm');
     updateSeriesTerms();
   }
 
@@ -215,7 +272,7 @@
     const tail = sim.terms.length > 6 ? ' + &hellip;' : '';
     const status = sim.collapsed
       ? ` = <strong>${fmtNum(sim.a, 16)} m</strong> — and there the computer stopped.`
-      : ` = <strong>${fmtNum(sim.a, 16)} m</strong>, still short of ${fmtNum(limitDist(), 12)} m`;
+      : ` = <strong>${fmtNum(sim.a, 16)} m</strong>, still short of ${exactHTML(...distNumDen(), 'm')}`;
     el.seriesTerms.innerHTML = parts + tail + status;
   }
 
@@ -313,7 +370,7 @@
       ctx.setLineDash([]);
       ctx.fillStyle = '#e0aa4b';
       ctx.font = '12px Inter, sans-serif';
-      const label = `the meeting point (${parseFloat(L.toPrecision(6))} m)`;
+      const label = `the meeting point (${exactText(...distNumDen(), 'm')})`;
       const tw = ctx.measureText(label).width;
       if (lx + 8 + tw <= W - 6) {
         ctx.textAlign = 'left';

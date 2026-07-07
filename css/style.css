@@ -277,6 +277,9 @@ input[type="range"] { accent-color: var(--accent); width: 150px; }
 .stat .value .unit { color: var(--muted); font-size: 0.85em; }
 .stat.highlight .value { color: var(--accent); }
 
+/* repeating-decimal repetend, e.g. 111.1̄ rendered as an overline */
+.rep { text-decoration: overline; }
+
 /* series sum bar */
 .sum-section { padding: 16px 18px 20px; border-top: 1px solid var(--border); }
 .sum-section .label { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
